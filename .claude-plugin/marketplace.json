@@ -1,0 +1,29 @@
+{
+  "name": "dracospark",
+  "description": "Dracospark — Pallas TPU kernel evolution and evidence-bound inference optimization",
+  "owner": {
+    "name": "Neuro Spark"
+  },
+  "plugins": [
+    {
+      "name": "pallas-evolve",
+      "description": "Interactive Pallas TPU kernel optimization via an iterative think-submit-analyze-reflect loop on a Cloud TPU VM over SSH. Skills: init-kernel, profile-brief, start, submit, analyze, reflect, transfer.",
+      "author": {
+        "name": "Neuro Spark"
+      },
+      "category": "development",
+      "source": "./kernel-evolve/plugins/pallas-evolve",
+      "homepage": "https://github.com/Neuro-Spark-AI/dracospark"
+    },
+    {
+      "name": "inference-opt",
+      "description": "Model/framework benchmark, profile, paired confirmation and review with the inference-opt harness.",
+      "author": {
+        "name": "Neuro Spark"
+      },
+      "category": "development",
+      "source": "./inference-opt/plugins/inference-opt",
+      "homepage": "https://github.com/Neuro-Spark-AI/dracospark"
+    }
+  ]
+}

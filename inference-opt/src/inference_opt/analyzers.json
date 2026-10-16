@@ -1,0 +1,45 @@
+{
+  "protocol": 1,
+  "analyzers": [
+    {
+      "key": "dracospark.inference-opt.kineto-roofline",
+      "status": "ACTIVE",
+      "source": {
+        "repo": "Neuro-Spark-AI/dracospark",
+        "path": "inference-opt/src/inference_opt/analysis.py",
+        "symbol": "analyze_trace"
+      },
+      "code_sha256": "e0aa015d44d26dc808b4ff3dcc1ae5cee88138d1fe2e316626038b4b8dc3855e"
+    },
+    {
+      "key": "dracospark.inference-opt.paired-comparison",
+      "status": "ACTIVE",
+      "source": {
+        "repo": "Neuro-Spark-AI/dracospark",
+        "path": "inference-opt/src/inference_opt/compare.py",
+        "symbol": "compare"
+      },
+      "code_sha256": "4433ffcdea83eb95e6dcbd47e06faf328fa97a606badb194ef9bc3bda1d66ce4"
+    },
+    {
+      "key": "dracospark.inference-opt.collective-causality",
+      "status": "ACTIVE",
+      "source": {
+        "repo": "Neuro-Spark-AI/dracospark",
+        "path": "inference-opt/src/inference_opt/distributed.py",
+        "symbol": "collective_diagnostics"
+      },
+      "code_sha256": "b7667c7e0e048c1b1018ce08202b311ec50f704ba98d10b3ae8e3b2aa51eecda"
+    },
+    {
+      "key": "dracospark.inference-opt.opportunity",
+      "status": "ACTIVE",
+      "source": {
+        "repo": "Neuro-Spark-AI/dracospark",
+        "path": "inference-opt/src/inference_opt/opportunity.py",
+        "symbol": "opportunities"
+      },
+      "code_sha256": "d06377808d7ef9818721bce54a9e06d68b6faa14243a0c5e1185fd1c6369a945"
+    }
+  ]
+}

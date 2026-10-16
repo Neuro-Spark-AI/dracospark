@@ -1,0 +1,36 @@
+name: Inference optimization harness
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'inference-opt/**'
+      - '.github/workflows/inference-opt.yml'
+  pull_request:
+    paths:
+      - 'inference-opt/**'
+      - '.claude-plugin/marketplace.json'
+      - '.github/workflows/inference-opt.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  cpu-contract:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python: ['3.10', '3.12']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - run: python -m pip install -e './inference-opt[dev]'
+      - run: python -m pytest -q inference-opt/tests
+      - run: ruff check inference-opt && ruff format --check inference-opt
+      - name: Build and exercise the wheel without the source checkout on the import path
+        run: |
+          python -m build --wheel --outdir "$RUNNER_TEMP/wheels" inference-opt
+          python -m venv "$RUNNER_TEMP/wheel-env"
+          "$RUNNER_TEMP/wheel-env/bin/python" -m pip install --no-deps "$RUNNER_TEMP"/wheels/*.whl
+          "$RUNNER_TEMP/wheel-env/bin/python" -I -m inference_opt manifest
+          "$RUNNER_TEMP/wheel-env/bin/python" -I inference-opt/examples/run_cpu_fixture.py --output "$RUNNER_TEMP/fixture"

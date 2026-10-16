@@ -1,0 +1,11 @@
+{
+  "name": "pallas-evolve",
+  "description": "Interactive Pallas TPU kernel optimization via iterative eval-analyze-reflect loop on a TPU-VM (v6e) over SSH",
+  "version": "0.1.0",
+  "author": {
+    "name": "Neuro Spark"
+  },
+  "repository": "https://github.com/Neuro-Spark-AI/dracospark",
+  "license": "Apache-2.0",
+  "keywords": ["pallas", "tpu", "kernel", "optimization", "jax"]
+}

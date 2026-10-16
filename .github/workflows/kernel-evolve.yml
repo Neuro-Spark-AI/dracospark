@@ -1,0 +1,30 @@
+name: kernel-evolve
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'kernel-evolve/**'
+      - '.github/workflows/kernel-evolve.yml'
+  pull_request:
+    paths:
+      - 'kernel-evolve/**'
+      - '.github/workflows/kernel-evolve.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  cpu-tests:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python: ['3.10', '3.12']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - run: python -m pip install -e './kernel-evolve[dev]'
+      - run: python -m pytest -q
+        working-directory: kernel-evolve
+      - run: ruff check . && ruff format --check .
+        working-directory: kernel-evolve

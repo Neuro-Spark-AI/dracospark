@@ -1,0 +1,16 @@
+{
+  "name": "inference-opt",
+  "description": "Evidence-bound model and framework inference optimization",
+  "version": "0.1.0",
+  "author": {
+    "name": "Neuro Spark"
+  },
+  "repository": "https://github.com/Neuro-Spark-AI/dracospark",
+  "license": "Apache-2.0",
+  "keywords": [
+    "inference",
+    "optimization",
+    "profiling",
+    "benchmark"
+  ]
+}

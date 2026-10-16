@@ -1,0 +1,47 @@
+{
+  "schema_version": 1,
+  "id": "synthetic-unmeasured-head-tile-transfer",
+  "method": {
+    "name": "multi-head-per-tile attention",
+    "description": "Synthetic example of reusing head tiling with new local geometry; not a measured port",
+    "source_revision": "synthetic-source-v1",
+    "source_context": {"local_heads": 5, "heads_per_tile": 5, "attention_pattern": "dense"}
+  },
+  "candidate": {
+    "revision": "synthetic-candidate-v1",
+    "parameters": {"heads_per_tile": 7},
+    "adaptation": "Retune head grouping from 5 to 7; hardware compilation and correctness remain untested",
+    "guards": [
+      {"scope": "caller", "path": ["workload", "shapes", "local_heads"], "op": "divisible_by", "value": 7,
+       "reason": "The hypothetical implementation has no head-tail handling"},
+      {"scope": "caller", "path": ["workload", "semantics", "mask"], "op": "equals", "value": "dense",
+       "reason": "The hypothetical implementation has no packed/causal/window mask"},
+      {"scope": "caller", "path": ["workload", "semantics", "padding"], "op": "equals", "value": false,
+       "reason": "The hypothetical implementation cannot exclude padding keys"}
+    ]
+  },
+  "target": {
+    "name": "synthetic-target-workload",
+    "scopes": {
+      "caller": {
+        "incumbent_revision": "synthetic-control-v1",
+        "context": {
+          "workload": {
+            "shapes": {"local_heads": 14, "q_tokens": 1024, "kv_tokens": 1024, "head_dim": 128},
+            "dtypes": "bf16", "layout": "HSD-contiguous",
+            "semantics": {"mask": "dense", "padding": false, "rope": "already-applied"},
+            "input_id": "synthetic-not-generated", "concurrency": 1
+          },
+          "hardware": {"device": "synthetic-unmeasured"},
+          "runtime": {"compiler": "synthetic-v1", "caller_revision": "synthetic-caller-v1"},
+          "timing": {"scope": "compiled-attention-caller", "clock": "monotonic",
+                     "synchronized": true, "steady_state": true, "profiled": false}
+        }
+      }
+    }
+  },
+  "policy": {"objective_scope": "caller", "required_scopes": ["caller"], "min_fresh_runs": 3, "noise_pct": 5},
+  "checks": {},
+  "experiments": [],
+  "interventions": []
+}

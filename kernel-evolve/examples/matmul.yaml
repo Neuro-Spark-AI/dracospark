@@ -1,0 +1,40 @@
+kernel:
+  name: "tiled_matmul"
+  template: "kernels/matmul.py"
+  reference: "kernels/matmul_ref.py"
+  evolve_markers:
+    start: "# EVOLVE-BLOCK-START"
+    end: "# EVOLVE-BLOCK-END"
+
+shapes:
+  - { M: 1024, N: 1024, K: 1024 }
+  - { M: 2048, N: 2048, K: 2048 }
+
+correctness:
+  method: "allclose"
+  rtol: 1e-2
+  atol: 1.0
+
+evaluator:
+  namespace: "default"
+  job_template: ".github/ci/kernel-eval-job.yaml"
+  repo: "Neuro-Spark-AI/dracospark"   # repository the Job clones; use your fork if you changed kernels
+  branch: "main"
+  poll_interval: 15
+  timeout: 600
+
+tpu:
+  cluster: "REPLACE_WITH_GKE_CLUSTER"
+  zone: "REPLACE_WITH_GKE_LOCATION"
+
+session:
+  max_iterations: 20
+  output_dir: "runs/matmul"
+  # GitHub tracking is opt-in and off by default. To mirror round summaries:
+  # github_tracking: true
+  # tracking_repo: "owner/private-repo"
+
+batch:
+  variants_per_round: 5
+  top_k: 2
+  max_active_lineages: 4

@@ -1,0 +1,20 @@
+
+# Large TPU trace files (>100MB, stored in GCS)
+**/trace_events.json
+
+__pycache__/
+*.pyc
+*.egg-info/
+
+# Kernels and example configs are tracked; run outputs and heavy byproducts are not.
+/kernel-evolve/runs/
+/kernel-evolve/artifacts/
+/kernel-evolve/examples/pulled_*/
+**/eval_result.tmp
+.venv/
+kernel-evolve/examples/kernels/*_baseline/trace_events.json
+
+.pytest_cache/
+.ruff_cache/
+/inference-opt/build/
+/inference-opt/dist/

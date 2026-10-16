@@ -1,0 +1,61 @@
+# Example: optimize tiled_matmul on a TPU v6e-16 TPU-VM over SSH (no GKE).
+# Evaluation runs docker/evaluate.py on the VM; artifacts (LLO/HLO/trace) are
+# scp'd back. Fill in the REPLACE_WITH_* values for your v6e workers.
+
+kernel:
+  name: "tiled_matmul"
+  template: "kernels/matmul.py"
+  reference: "kernels/matmul_ref.py"
+  evolve_markers:
+    start: "# EVOLVE-BLOCK-START"
+    end: "# EVOLVE-BLOCK-END"
+
+shapes:
+  - { M: 1024, N: 1024, K: 1024 }
+  - { M: 2048, N: 2048, K: 2048 }
+
+correctness:
+  method: "allclose"
+  rtol: 1e-2
+  atol: 1.0
+
+evaluator:
+  type: "ssh"
+  # v6e-16 = 4 hosts on one ICI domain. evaluate.py is co-launched on ALL of
+  # them (a single host hangs on the libtpu init barrier); results + artifacts
+  # come from the first (primary). Discover the current external IPs with:
+  #   gcloud compute tpus tpu-vm describe <name> --zone <zone> \
+  #     --format="value(networkEndpoints[].accessConfig.externalIp)"
+  ssh_hosts:                                # IPs go stale on stop/start
+    - "REPLACE_WITH_WORKER_0_IP"
+    - "REPLACE_WITH_WORKER_1_IP"
+    - "REPLACE_WITH_WORKER_2_IP"
+    - "REPLACE_WITH_WORKER_3_IP"
+  # Single-host slice (v6e-1/-4/-8): use ssh_host instead of ssh_hosts.
+  # ssh_host: "REPLACE_WITH_WORKER_IP"
+  ssh_user: "REPLACE_WITH_SSH_USER"
+  ssh_key: "REPLACE_WITH_PATH_TO_SSH_PRIVATE_KEY"
+  ssh_remote_repo: "~/dracospark"            # checkout on each VM (pip install -e kernel-evolve/)
+  ssh_python: "~/tpu-venv/bin/python"        # python env with jax/libtpu + kernel-evolve
+  ssh_remote_tmp: "/tmp/kernel_eval"
+  ssh_artifacts_dir: "/tmp/kernel_eval_artifacts"
+  timeout: 1800
+
+# Roofline peaks used for compute/HBM/VMEM utilization %. Defaults are v6e.
+roofline:
+  peak_flops: 918.0e12       # v6e bf16 TFLOP/s
+  peak_hbm_bw: 1759.0e9      # v6e HBM GB/s
+  hbm_capacity_gb: 32.0      # v6e HBM per chip
+  vmem_capacity_mib: 128.0   # v6e physical VMEM per chip (confirm; override if wrong)
+
+session:
+  max_iterations: 20
+  output_dir: "runs/matmul_v6e"
+  # GitHub tracking is opt-in and off by default. To mirror round summaries:
+  # github_tracking: true
+  # tracking_repo: "owner/private-repo"
+
+batch:
+  variants_per_round: 5
+  top_k: 2
+  max_active_lineages: 4

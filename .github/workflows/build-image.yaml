@@ -1,0 +1,58 @@
+name: Build & Push Image
+
+on:
+  workflow_dispatch:
+    inputs:
+      image_tag:
+        description: "Image tag (default: latest)"
+        required: false
+        default: "latest"
+        type: string
+
+# Required repository variables (Settings > Secrets and variables > Actions > Variables):
+#   GCP_WORKLOAD_IDENTITY_PROVIDER  projects/<number>/locations/global/workloadIdentityPools/<pool>/providers/<provider>
+#   GCP_SERVICE_ACCOUNT             <name>@<project>.iam.gserviceaccount.com
+#   GCP_PROJECT                     GCP project ID that owns the Artifact Registry repository
+#   GCP_REGION                      Artifact Registry region, e.g. us-central1
+#   ARTIFACT_REGISTRY_REPO          Artifact Registry repository name (Docker format)
+env:
+  REGION: ${{ vars.GCP_REGION }}
+  REGISTRY: ${{ vars.GCP_REGION }}-docker.pkg.dev
+  REPOSITORY: ${{ vars.GCP_PROJECT }}/${{ vars.ARTIFACT_REGISTRY_REPO }}
+  IMAGE_NAME: kernel-eval
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ vars.GCP_SERVICE_ACCOUNT }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Configure Docker for Artifact Registry
+        run: gcloud auth configure-docker ${{ env.REGISTRY }} --quiet
+
+      - name: Build and push image
+        env:
+          TAG: ${{ inputs.image_tag }}
+        run: |
+          IMAGE="${{ env.REGISTRY }}/${{ env.REPOSITORY }}/${{ env.IMAGE_NAME }}"
+          docker build \
+            --platform linux/amd64 \
+            -t "${IMAGE}:${TAG}" \
+            -f kernel-evolve/docker/Dockerfile \
+            kernel-evolve/docker/
+          docker push "${IMAGE}:${TAG}"
+          echo "Pushed ${IMAGE}:${TAG}"

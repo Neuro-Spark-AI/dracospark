@@ -1,0 +1,145 @@
+{
+  "status": "SUCCESS",
+  "variant_id": "baseline",
+  "fitness": 0.9848602061448888,
+  "latency_ms": 0.15207749999999942,
+  "speedup": 0.9848602061448888,
+  "flops": 0.0,
+  "compute_ratio": 0.4924447081208351,
+  "memory_transfer_ratio": 0.5075552918791649,
+  "metadata": {
+    "reference_latency_ms": 0.14977507799999876,
+    "reference_perf_ok": true,
+    "profile_diagnostics": {
+      "process_names": {
+        "3": [
+          "/device:TPU:0",
+          "XLA Modules",
+          "XLA Ops",
+          "Tensor Core",
+          "Tensor Core Sync Flag",
+          "_counters_",
+          "counters_0",
+          "Framework Name Scope",
+          "Framework Ops",
+          "Source code"
+        ],
+        "11": [
+          "/device:TPU:1",
+          "Tensor Core Sync Flag",
+          "_counters_",
+          "counters_0"
+        ],
+        "19": [
+          "/device:TPU:2",
+          "Tensor Core Sync Flag",
+          "_counters_",
+          "counters_0"
+        ],
+        "27": [
+          "/device:TPU:3",
+          "Tensor Core Sync Flag",
+          "_counters_",
+          "counters_0"
+        ],
+        "701": [
+          "/host:CPU",
+          "GrpcTcpEvents",
+          "GrpcClientEvents",
+          "GrpcServerEvents",
+          "GrpcSystemStatsEvents",
+          "main/544185",
+          "futex-default-SDomainT/544748",
+          "python",
+          "jit_optimized_compute"
+        ]
+      },
+      "selected_pid": 3,
+      "total_events": 190125,
+      "tpu_events": 44491,
+      "computation_events": 40
+    },
+    "hw_utilization": null,
+    "profile": {
+      "ok": true,
+      "vliw_bundle_count": 26095,
+      "mxu_utilization": {
+        "mxu0": 512,
+        "mxu1": 0,
+        "total": 512,
+        "dual_ratio": 0.0,
+        "distribution": {
+          "mxu0_pct": 100.0,
+          "mxu1_pct": 0.0
+        }
+      },
+      "hbm_bandwidth_bytes": 4194304,
+      "flops": null,
+      "arithmetic_intensity": null,
+      "vmem_allocation": {
+        "vmem_bytes": 5251072,
+        "smem_bytes": 0,
+        "allocation_count": 5
+      },
+      "vmem_utilization_pct": 3.912353515625,
+      "bundle_density": {
+        "total_bundles": 26095,
+        "avg_ops_per_bundle": 1.2062080858401993,
+        "max_ops_per_bundle": 0
+      },
+      "dma_analysis": {
+        "dma_count": 1792,
+        "dma_sync_count": 0,
+        "double_buffering": false
+      },
+      "fusion_analysis": {
+        "fusion_count": 0,
+        "has_cross_program_prefetch": false
+      },
+      "special_units": {
+        "xlane_ops": 256,
+        "eup_ops": 4,
+        "nop_count": 0
+      },
+      "hbm_bandwidth_utilization_pct": 1.5679387760173544,
+      "hbm_capacity_utilization_pct": 0.085487961769104
+    },
+    "benchmark": {
+      "lower_time_ms": 51.88221903517842,
+      "compile_time_ms": 125645.2687769779,
+      "evaluation_times_ms": [
+        0.1519960940000019,
+        0.15203250000000115,
+        0.15209507799999847,
+        0.15227742199999922,
+        0.15207749999999942
+      ],
+      "peak_memory_mb": 28.0126953125,
+      "median_ms": 0.15207749999999942,
+      "min_ms": 0.1519960940000019,
+      "max_ms": 0.15227742199999922,
+      "stddev_ms": 9.723179072300585e-05,
+      "cv": 0.0006393568458385114,
+      "timing_source": "xprof_clustered"
+    },
+    "reference_benchmark": {
+      "lower_time_ms": 46.0357689880766,
+      "compile_time_ms": 127313.22456197813,
+      "evaluation_times_ms": [
+        0.15019499999999972,
+        0.14989257799999905,
+        0.14977507799999876,
+        0.14965859400000045,
+        0.14976382800000282
+      ],
+      "peak_memory_mb": 44.01220703125,
+      "median_ms": 0.14977507799999876,
+      "min_ms": 0.14965859400000045,
+      "max_ms": 0.15019499999999972,
+      "stddev_ms": 0.0001845356168171563,
+      "cv": 0.0012320849321617968,
+      "timing_source": "xprof_clustered"
+    },
+    "artifacts_local_dir": "/tmp/kernel_eval_artifacts/qkv-baseline/baseline"
+  }
+}

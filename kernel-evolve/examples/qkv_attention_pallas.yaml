@@ -1,0 +1,57 @@
+# qkv self-attention (Pallas core) on a TPU v6e-16 slice over SSH.
+
+kernel:
+  name: "qkv_attention_pallas"
+  template: "kernels/qkv_attention_pallas.py"
+  reference: "kernels/qkv_attention_pallas_ref.py"
+  evolve_markers:
+    start: "# EVOLVE-BLOCK-START"
+    end: "# EVOLVE-BLOCK-END"
+
+shapes:
+  # evaluate.py benchmarks shapes[0] only (correctness checks all). Single shape
+  # keeps the fitness unambiguous. S=1024: non-flash baseline ~parity with jnp,
+  # so there is real headroom for the loop (flash tiling / online softmax).
+  - { B: 1, S: 1024, H: 8, D: 128 }
+
+correctness:
+  method: "allclose"
+  rtol: 1e-2
+  atol: 1.0e-2
+
+evaluator:
+  type: "ssh"
+  # v6e-16 = 4 hosts, co-launched; results from the first (primary). IPs go
+  # stale — re-discover with gcloud (see SSH_V6E.md).
+  ssh_hosts:
+    - "REPLACE_WITH_WORKER_0_IP"   # jax process 0 (primary)
+    - "REPLACE_WITH_WORKER_1_IP"
+    - "REPLACE_WITH_WORKER_2_IP"
+    - "REPLACE_WITH_WORKER_3_IP"
+  # Single-host slice (v6e-1/-4/-8): use ssh_host instead of ssh_hosts.
+  # ssh_host: "REPLACE_WITH_WORKER_IP"
+  ssh_user: "REPLACE_WITH_SSH_USER"
+  ssh_key: "REPLACE_WITH_PATH_TO_SSH_PRIVATE_KEY"
+  ssh_remote_repo: "~/dracospark"            # checkout on each VM (pip install -e kernel-evolve/)
+  ssh_python: "~/tpu-venv/bin/python"        # python env with jax/libtpu + kernel-evolve
+  ssh_remote_tmp: "/tmp/kernel_eval"
+  ssh_artifacts_dir: "/tmp/kernel_eval_artifacts"
+  timeout: 1800
+
+roofline:                     # TPU v6e (Trillium), physical VMEM confirmed 128 MiB
+  peak_flops: 918.0e12
+  peak_hbm_bw: 1759.0e9
+  hbm_capacity_gb: 32.0
+  vmem_capacity_mib: 128.0
+
+batch:
+  variants_per_round: 4
+  top_k: 2
+  max_active_lineages: 3
+
+session:
+  max_iterations: 6
+  output_dir: "runs/qkv_attention_pallas"
+  # GitHub tracking is opt-in and off by default. To mirror round summaries:
+  # github_tracking: true
+  # tracking_repo: "owner/private-repo"

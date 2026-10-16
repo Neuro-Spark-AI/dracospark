@@ -1,0 +1,4 @@
+interface:
+  display_name: "Inference Optimization"
+  short_description: "Run evidence-bound inference optimization cycles"
+  default_prompt: "Use $inference-opt to benchmark, profile and evaluate a registered inference optimization candidate."

@@ -1,0 +1,122 @@
+name: Kernel Evaluation
+
+on:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: "Branch name or commit SHA to evaluate"
+        required: true
+        type: string
+      eval_payload:
+        description: "Base64-encoded evaluation request"
+        required: true
+        type: string
+      variant_id:
+        description: "Variant identifier"
+        required: true
+        type: string
+
+# Required repository variables (Settings > Secrets and variables > Actions > Variables):
+#   GCP_WORKLOAD_IDENTITY_PROVIDER  projects/<number>/locations/global/workloadIdentityPools/<pool>/providers/<provider>
+#   GCP_SERVICE_ACCOUNT             <name>@<project>.iam.gserviceaccount.com
+#   GKE_CLUSTER                     GKE cluster with TPU node pools
+#   GCP_REGION                      Cluster location (region or zone)
+#   GCS_PROFILE_BUCKET              Optional bucket for profile artifacts (empty skips upload)
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  evaluate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
+
+      - name: Authenticate to GCP
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ vars.GCP_SERVICE_ACCOUNT }}
+
+      - name: Get GKE credentials
+        uses: google-github-actions/get-gke-credentials@v2
+        with:
+          cluster_name: ${{ vars.GKE_CLUSTER }}
+          location: ${{ vars.GCP_REGION }}
+
+      - name: Generate unique job name
+        id: job
+        run: |
+          JOB_NAME="kernel-eval-${GITHUB_RUN_NUMBER}"
+          JOB_NAME=$(echo "$JOB_NAME" | tr '[:upper:]' '[:lower:]' | head -c 63)
+          echo "name=$JOB_NAME" >> "$GITHUB_OUTPUT"
+
+      - name: Create eval payload ConfigMap
+        env:
+          JOB_NAME: ${{ steps.job.outputs.name }}
+          EVAL_PAYLOAD: ${{ inputs.eval_payload }}
+        run: |
+          kubectl create configmap "${JOB_NAME}-payload" \
+            --from-literal=payload="${EVAL_PAYLOAD}" \
+            --dry-run=client -o yaml | kubectl apply -f -
+          kubectl label configmap "${JOB_NAME}-payload" app=kernel-eval --overwrite
+
+      - name: Deploy K8s Job
+        env:
+          JOB_NAME: ${{ steps.job.outputs.name }}
+          BRANCH: ${{ inputs.ref }}
+          REPO: ${{ github.repository }}
+          VARIANT_ID: ${{ inputs.variant_id }}
+          ACTIVE_DEADLINE: "1200"
+          GCS_BUCKET: ${{ vars.GCS_PROFILE_BUCKET }}
+        run: |
+          envsubst '$JOB_NAME $BRANCH $REPO $VARIANT_ID $ACTIVE_DEADLINE $GCS_BUCKET' \
+            < .github/ci/kernel-eval-job.yaml \
+            | kubectl apply -f -
+
+      - name: Wait for pod to start
+        run: |
+          JOB_NAME="${{ steps.job.outputs.name }}"
+          echo "Waiting for pod of job/$JOB_NAME to start..."
+          for i in $(seq 1 60); do
+            POD=$(kubectl get pods -l "job-name=$JOB_NAME" \
+              -o jsonpath='{.items[0].metadata.name}' 2>/dev/null || true)
+            if [ -n "$POD" ]; then
+              PHASE=$(kubectl get pod "$POD" -o jsonpath='{.status.phase}' 2>/dev/null || true)
+              echo "  Pod $POD phase: $PHASE"
+              if [ "$PHASE" = "Running" ] || [ "$PHASE" = "Succeeded" ] || [ "$PHASE" = "Failed" ]; then
+                break
+              fi
+            fi
+            echo "  Waiting for pod to be scheduled... ($i/60)"
+            sleep 10
+          done
+
+      - name: Stream logs & wait for completion
+        run: |
+          JOB_NAME="${{ steps.job.outputs.name }}"
+
+          kubectl logs -f "job/$JOB_NAME" -c kernel-eval || true
+
+          if kubectl wait --for=condition=complete --timeout=60s "job/$JOB_NAME" 2>/dev/null; then
+            echo "Job completed successfully!"
+            exit 0
+          fi
+          if kubectl wait --for=condition=failed --timeout=60s "job/$JOB_NAME" 2>/dev/null; then
+            echo "Job failed!"
+            exit 1
+          fi
+          echo "Job in unexpected state:"
+          kubectl get "job/$JOB_NAME" -o wide
+          exit 1
+
+      - name: Cleanup
+        if: always()
+        run: |
+          JOB_NAME="${{ steps.job.outputs.name }}"
+          kubectl delete job "$JOB_NAME" --ignore-not-found
+          kubectl delete configmap "${JOB_NAME}-payload" --ignore-not-found

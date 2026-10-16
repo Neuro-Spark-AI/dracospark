@@ -1,0 +1,11 @@
+Dracospark
+Copyright 2026 Neuro Spark
+
+This product is licensed under the Apache License, Version 2.0 (see LICENSE).
+
+The optional gmm_fp8_blockwise example imports, but does not include, the
+following third-party packages, which are distributed under their own licenses:
+
+- tokamax (Apache License 2.0), installed from https://github.com/primatrix/tokamax
+- qwix (Apache License 2.0)
+- JAX (Apache License 2.0)

@@ -1,0 +1,39 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "dracospark-inference-opt"
+version = "0.2.0"
+description = "Evidence-bound agentic inference optimization harness"
+requires-python = ">=3.10"
+readme = "README.md"
+license = {text = "Apache-2.0"}
+authors = [{name = "Neuro Spark"}]
+dependencies = []
+
+[project.urls]
+Homepage = "https://github.com/Neuro-Spark-AI/dracospark"
+Issues = "https://github.com/Neuro-Spark-AI/dracospark/issues"
+
+[project.optional-dependencies]
+dev = ["pytest>=8", "ruff>=0.4", "build>=1", "pyyaml>=6", "jsonschema>=4"]
+
+[project.scripts]
+inference-opt = "inference_opt.__main__:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+inference_opt = ["analyzers.json"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 120
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "I"]
