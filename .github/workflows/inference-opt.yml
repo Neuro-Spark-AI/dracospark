@@ -5,11 +5,9 @@ on:
     paths:
       - 'inference-opt/**'
       - '.github/workflows/inference-opt.yml'
+  # Every PR runs this workflow: its jobs are required status checks on main,
+  # and a path-filtered workflow would leave unrelated PRs waiting forever.
   pull_request:
-    paths:
-      - 'inference-opt/**'
-      - '.claude-plugin/marketplace.json'
-      - '.github/workflows/inference-opt.yml'
   workflow_dispatch:
 permissions:
   contents: read
