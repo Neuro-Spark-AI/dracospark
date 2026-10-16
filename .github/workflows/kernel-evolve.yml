@@ -5,10 +5,9 @@ on:
     paths:
       - 'kernel-evolve/**'
       - '.github/workflows/kernel-evolve.yml'
+  # Every PR runs this workflow: its jobs are required status checks on main,
+  # and a path-filtered workflow would leave unrelated PRs waiting forever.
   pull_request:
-    paths:
-      - 'kernel-evolve/**'
-      - '.github/workflows/kernel-evolve.yml'
   workflow_dispatch:
 permissions:
   contents: read
